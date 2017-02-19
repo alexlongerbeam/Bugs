@@ -6,9 +6,9 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////
-//*******************************ACTOR METHODS*************************************
+//*******************************ACTOR METHODS**************************************
 ////////////////////////////////////////////////////////////////////////////////////
-Actor::Actor(int x, int y, int imageID, Direction dir = right, unsigned int depth = 1): GraphObject(imageID, x, y, dir){
+Actor::Actor(int x, int y, int imageID, Direction dir = right, unsigned int depth = 1): GraphObject(imageID, x, y, dir, depth){
 
         m_isAlive = true;
 }
