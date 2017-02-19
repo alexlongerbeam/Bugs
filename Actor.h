@@ -12,6 +12,8 @@ public:
     virtual ~Actor();
     virtual void doSomething() = 0;
     bool isAlive();
+    
+protected:
     void setDead();
     
 private:
@@ -38,16 +40,17 @@ public:
     
     
 protected:
-    void addTicks(int a);
+    void resetTicks();
     void sub1Tick();
     int ticksToSleep();
-    bool isAsleep();
+    void randomDir();
+    bool moveOne();
     
     
 private:
     int m_points;
     int m_ticksToSleep;
-    bool m_isAsleep;
+    
 };
 
 
@@ -62,6 +65,7 @@ protected:
     int distanceToWalk();
     void resetDistance();
     void sub1Walk();
+    void setDistanceZero();
 private:
     int m_distanceToWalk;
 };

@@ -15,7 +15,13 @@ Actor::Actor(int x, int y, int imageID, Direction dir = right, unsigned int dept
 
 Actor::~Actor(){}
 
+bool Actor::isAlive(){
+    return m_isAlive;
+}
 
+void Actor::setDead(){
+    m_isAlive = false;
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************PEBBLE METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -34,22 +40,7 @@ void Pebble::doSomething(){}
 Insect::Insect(int x, int y, int imageID, int p): Actor(x, y, imageID){
     
     //Pick random direction to face
-    int d = randInt(0, 3);
-    switch (d){
-        case 0:
-            setDirection(up);
-            break;
-        case 1:
-            setDirection(right);
-            break;
-        case 2:
-            setDirection(down);
-            break;
-        case 3:
-            setDirection(left);
-            break;
-    }
-
+    randomDir();
     m_points = p;
 }
 
@@ -69,8 +60,8 @@ int Insect::getPoints(){
 
 
 
-void Insect::addTicks(int a){
-    m_ticksToSleep+=a;
+void Insect::resetTicks(){
+    m_ticksToSleep = 2;
 }
 
 void Insect::sub1Tick(){
@@ -79,11 +70,55 @@ void Insect::sub1Tick(){
 int Insect::ticksToSleep(){
     return m_ticksToSleep;
 }
-bool Insect::isAsleep(){
-    return m_isAsleep;
+
+
+bool Insect::moveOne(){
+    //Change to check if pebble is present
+    
+    //If no pebble in the way
+    
+    Direction d = getDirection();
+    
+    switch (d){
+        case up:
+            moveTo(getX(), getY()+1);
+            break;
+        case right:
+            moveTo(getX()+1, getY());
+            break;
+        case down:
+            moveTo(getX(), getY()-1);
+            break;
+        case left:
+            moveTo(getX()-1, getY());
+            break;
+        case none:
+            return false;
+    }
+    
+    return true;
 }
 
 
+
+void Insect::randomDir(){
+    int d = randInt(0, 3);
+    switch (d){
+        case 0:
+            setDirection(up);
+            break;
+        case 1:
+            setDirection(right);
+            break;
+        case 2:
+            setDirection(down);
+            break;
+        case 3:
+            setDirection(left);
+            break;
+    }
+
+}
 
 
 
@@ -92,7 +127,6 @@ bool Insect::isAsleep(){
 ////////////////////////////////////////////////////////////////////////////////////
 
 Grasshopper::Grasshopper(int x, int y, int imageID = IID_ADULT_GRASSHOPPER, int p = 1600):Insect(x, y, imageID, p){
-
     
     resetDistance();
     
@@ -116,6 +150,10 @@ void Grasshopper::sub1Walk(){
     m_distanceToWalk--;
 }
 
+void Grasshopper::setDistanceZero(){
+    m_distanceToWalk = 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 //**************************BABY GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -125,7 +163,49 @@ BabyGrasshopper::BabyGrasshopper(int x, int y, int imageID = IID_BABY_GRASSHOPPE
 
 BabyGrasshopper::~BabyGrasshopper(){}
 
-void BabyGrasshopper::doSomething(){}
+void BabyGrasshopper::doSomething(){
+
+    subtractPoints(1);
+    
+    if (getPoints()<1){
+        //add 100 units of food at current location
+        setDead();
+        return;
+    }
+    
+    if (ticksToSleep()>0){
+        sub1Tick();
+        return;
+    }
+    
+    //Otherwise, grasshopper will do something this round
+    
+    //FOR NOW, NO Change to adult
+//    if (getPoints()>=1600){
+//        //Turn into adult grasshopper
+//        //Add grasshopper in same location
+//        //Set baby status to dead
+//        return;
+//    }
+    
+    //Attempt to eat food, not for part 1
+    
+    
+    //Continue walking
+    if (distanceToWalk()==0){
+        randomDir();
+        resetDistance();
+    }
+    
+    if(moveOne())
+        sub1Walk();
+    else
+        setDistanceZero();
+    
+    resetTicks();
+    
+
+}
 
 
 
