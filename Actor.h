@@ -37,8 +37,17 @@ public:
     int getPoints();
     
     
+protected:
+    void addTicks(int a);
+    void sub1Tick();
+    int ticksToSleep();
+    bool isAsleep();
+    
+    
 private:
     int m_points;
+    int m_ticksToSleep;
+    bool m_isAsleep;
 };
 
 
@@ -49,8 +58,12 @@ public:
     virtual ~Grasshopper();
     virtual void doSomething();
     
+protected:
+    int distanceToWalk();
+    void resetDistance();
+    void sub1Walk();
 private:
-    bool isAsleep;
+    int m_distanceToWalk;
 };
 
 class BabyGrasshopper: public Grasshopper{
