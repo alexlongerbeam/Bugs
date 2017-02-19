@@ -28,7 +28,7 @@ public:
 
 class Insect: public Actor{
 public:
-    Insect(int x, int y, int imageID, Direction dir, int p);
+    Insect(int x, int y, int imageID, int p);
     virtual ~Insect();
     virtual void doSomething() = 0;
     

@@ -31,7 +31,24 @@ void Pebble::doSomething(){}
 //*******************************INSECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Insect::Insect(int x, int y, int imageID, Direction dir, int p): Actor(x, y, imageID, dir){
+Insect::Insect(int x, int y, int imageID, int p): Actor(x, y, imageID){
+    
+    //Pick random direction to face
+    int d = randInt(0, 3);
+    switch (d){
+        case 0:
+            setDirection(up);
+            break;
+        case 1:
+            setDirection(right);
+            break;
+        case 2:
+            setDirection(down);
+            break;
+        case 3:
+            setDirection(left);
+            break;
+    }
 
     m_points = p;
 }
@@ -56,11 +73,13 @@ int Insect::getPoints(){
 //*******************************GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Grasshopper::Grasshopper(int x, int y, int imageID = IID_ADULT_GRASSHOPPER, int p = 1600):Insect(x, y, imageID, right, p){
+Grasshopper::Grasshopper(int x, int y, int imageID = IID_ADULT_GRASSHOPPER, int p = 1600):Insect(x, y, imageID, p){
 
     
-    //pick random direction, walk random distance
     isAsleep = false;
+    
+    int distance = randInt(2, 10);
+    
     
 }
 
