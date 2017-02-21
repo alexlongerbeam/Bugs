@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************ACTOR METHODS**************************************
 ////////////////////////////////////////////////////////////////////////////////////
-Actor::Actor(int x, int y, int imageID, Direction dir = right, unsigned int depth = 1): GraphObject(imageID, x, y, dir, depth){
+Actor::Actor(int x, int y, int imageID, Direction dir, unsigned int depth): GraphObject(imageID, x, y, dir, depth){
 
         m_isAlive = true;
 }
@@ -126,7 +126,7 @@ void Insect::randomDir(){
 //*******************************GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Grasshopper::Grasshopper(int x, int y, int imageID = IID_ADULT_GRASSHOPPER, int p = 1600):Insect(x, y, imageID, p){
+Grasshopper::Grasshopper(int x, int y, int imageID, int p):Insect(x, y, imageID, p){
     
     resetDistance();
     
@@ -157,7 +157,7 @@ void Grasshopper::setDistanceZero(){
 ////////////////////////////////////////////////////////////////////////////////////
 //**************************BABY GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
-BabyGrasshopper::BabyGrasshopper(int x, int y, int imageID = IID_BABY_GRASSHOPPER, int p=500): Grasshopper(x, y, imageID, p){
+BabyGrasshopper::BabyGrasshopper(int x, int y, int imageID, int p): Grasshopper(x, y, imageID, p){
 
 }
 

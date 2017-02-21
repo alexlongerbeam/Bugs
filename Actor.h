@@ -8,7 +8,7 @@
 
 class Actor: public GraphObject{
 public:
-    Actor(int x, int y, int imageID, Direction dir, unsigned int depth);
+    Actor(int x, int y, int imageID, Direction dir = right, unsigned int depth = 1);
     virtual ~Actor();
     virtual void doSomething() = 0;
     bool isAlive();
@@ -57,7 +57,7 @@ private:
 
 class Grasshopper: public Insect{
 public:
-    Grasshopper(int x, int y, int imageID, int p);
+    Grasshopper(int x, int y, int imageID= IID_ADULT_GRASSHOPPER, int p = 1600);
     virtual ~Grasshopper();
     virtual void doSomething();
     
@@ -72,7 +72,7 @@ private:
 
 class BabyGrasshopper: public Grasshopper{
 public:
-    BabyGrasshopper(int x, int y, int imageID, int p);
+    BabyGrasshopper(int x, int y, int imageID = IID_BABY_GRASSHOPPER, int p = 500);
     virtual ~BabyGrasshopper();
     virtual void doSomething();
 };

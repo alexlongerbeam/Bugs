@@ -3,6 +3,8 @@
 
 #include "GameWorld.h"
 #include "GameConstants.h"
+#include <list>
+#include "Actor.h"
 #include <string>
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
@@ -10,28 +12,25 @@
 class StudentWorld : public GameWorld
 {
 public:
-	StudentWorld(std::string assetDir)
-	 : GameWorld(assetDir)
-	{
-	}
+    StudentWorld(std::string assetDir);
+    virtual ~StudentWorld();
 
-	virtual int init()
-	{
-		return GWSTATUS_CONTINUE_GAME;
-	}
+    virtual int init();
+	
 
-	virtual int move()
-	{
-		  // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-		  // Notice that the return value GWSTATUS_NO_WINNER will cause our framework to end the simulation.
-		return GWSTATUS_NO_WINNER;
-	}
+    virtual int move();
+	
 
-	virtual void cleanUp()
-	{
-	}
+    virtual void cleanUp();
+	
 
 private:
+    bool loadField();
+    std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
+    int tickCount;
+    void moveAll();
+    void actorMoved(Actor * a, int oldX, int oldY);
+    void checkDead();
 };
 
 #endif // STUDENTWORLD_H_
