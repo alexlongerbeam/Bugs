@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <vector>
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir)
@@ -21,6 +22,7 @@ StudentWorld::~StudentWorld(){
 
 int StudentWorld::init()
     {
+        
         tickCount = 0;
         if (!loadField()){
             cerr<<"Error loading field"<<endl;
@@ -35,8 +37,7 @@ int StudentWorld::move()
         moveAll();
         checkDead();
         //Temp for testing
-        setGameStatText("Temporary");
-        
+        setGameStatText(to_string(tickCount));
         if (tickCount==2000){
             //setWinner()
             //return GWSTATUS_PLAYER_WON if there is a winner
@@ -65,24 +66,23 @@ bool StudentWorld::loadField(){
         string fieldFile = getFieldFilename();
         string error;
         if (f.loadField(fieldFile, error) != Field::LoadResult::load_success) {
+            cerr<<"Error: "<<error<<endl;
             setError(fieldFile + " " + error);
             return false; // something bad happened!
         }
     
-    
     for (int x=0; x<VIEW_WIDTH; x++){
         for (int y=0; y<VIEW_HEIGHT; y++){
             Field::FieldItem item = f.getContentsOf(x,y);
-            
             Actor * a;
             
             switch (item) {
                 case Field::rock:
-                    a = new Pebble(x,y);
+                    a = new Pebble(x,y, this);
                     world[x][y].push_front(a);
                     break;
                 case Field::grasshopper:
-                    a = new BabyGrasshopper(x,y);
+                    a = new BabyGrasshopper(x,y, this);
                     world[x][y].push_front(a);
                     break;
                 //case Field::food:
@@ -107,21 +107,40 @@ return true;
 
 
 void StudentWorld::moveAll(){
+    //Vector to keep track of objects that moved for quick reactivation
+    vector<Actor *> moved;
+    
     for (int x=0; x<VIEW_WIDTH; x++){
         for (int y=0; y<VIEW_HEIGHT; y++){
             Actor *a;
             list<Actor *>::iterator i = world[x][y].begin();
             while (i != world[x][y].end()){
                 a = *i;
-                if (a->isAlive()){
+                if (a->isAlive()&&a->isActive()){
+                    //cerr<<"Do Something called"<<endl;
                     a->doSomething();
                     if (a->getX()!=x || a->getY()!=y){
+                        i--;
+                        moved.push_back(a); //adds to list of objects that have moved
+                        a->moved(); //Makes it so it won't move again
                         actorMoved(a, x, y);
+                        
                     }
                 }
+                i++;
             }
         }
     }
+    
+    //Reactivate all that moved
+    
+    vector<Actor *>::iterator i = moved.begin();
+    
+    while (i != moved.end()){
+        (*i)->reActivate();
+        i++;
+    }
+    
 }
 
 
@@ -133,10 +152,13 @@ void StudentWorld::checkDead(){
             while (i != world[x][y].end()){
                 a = (*i);
                 if (!a->isAlive()){
-                    i--;
+                    cerr<<"Dying Grasshopper"<<endl;
+                    world[x][y].erase(i);
                     delete a;
+                    i = world[x][y].begin();
                 }
-                i++;
+                else
+                    i++;
             }
         }
     }
@@ -162,6 +184,24 @@ void StudentWorld::actorMoved(Actor * a, int oldX, int oldY){
     world[a->getX()][a->getY()].push_front(a);
     
     
+}
+
+bool StudentWorld::pebbleAt(int x, int y){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    Actor *a;
+    while (i != li.end()){
+        a = *i;
+        Pebble *p = dynamic_cast<Pebble*>(a);
+        if (p!=nullptr)
+            //Pebble is present
+            return true;
+        i++;
+    }
+    
+    return false;
 }
     
     

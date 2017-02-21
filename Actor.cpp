@@ -1,6 +1,6 @@
 #include "Actor.h"
 #include "StudentWorld.h"
-
+#include <iostream>
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
 
@@ -8,9 +8,11 @@
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************ACTOR METHODS**************************************
 ////////////////////////////////////////////////////////////////////////////////////
-Actor::Actor(int x, int y, int imageID, Direction dir, unsigned int depth): GraphObject(imageID, x, y, dir, depth){
+Actor::Actor(int x, int y, StudentWorld * w, int imageID, Direction dir, unsigned int depth): GraphObject(imageID, x, y, dir, depth){
 
+        m_world = w;
         m_isAlive = true;
+        m_active = true;
 }
 
 Actor::~Actor(){}
@@ -22,11 +24,26 @@ bool Actor::isAlive(){
 void Actor::setDead(){
     m_isAlive = false;
 }
+
+StudentWorld* Actor::getWorld(){
+    return m_world;
+}
+
+bool Actor::isActive(){
+    return m_active;
+}
+void Actor::reActivate(){
+    m_active = true;
+}
+
+void Actor::moved(){
+    m_active = false;
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************PEBBLE METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Pebble::Pebble(int x, int y):Actor(x, y, IID_ROCK, right){}
+Pebble::Pebble(int x, int y, StudentWorld * w):Actor(x, y, w, IID_ROCK, right){}
 
 Pebble::~Pebble(){}
 
@@ -37,7 +54,7 @@ void Pebble::doSomething(){}
 //*******************************INSECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Insect::Insect(int x, int y, int imageID, int p): Actor(x, y, imageID){
+Insect::Insect(int x, int y, StudentWorld * w, int imageID, int p): Actor(x, y, w, imageID){
     
     //Pick random direction to face
     randomDir();
@@ -73,7 +90,8 @@ int Insect::ticksToSleep(){
 
 
 bool Insect::moveOne(){
-    //Change to check if pebble is present
+    //If pebble present, return false cause it didn't move
+    
     
     //If no pebble in the way
     
@@ -81,15 +99,27 @@ bool Insect::moveOne(){
     
     switch (d){
         case up:
+            if (getWorld()->pebbleAt(getX(), getY()+1)){
+                return false;
+            }
             moveTo(getX(), getY()+1);
             break;
         case right:
+            if (getWorld()->pebbleAt(getX()+1, getY())){
+                return false;
+            }
             moveTo(getX()+1, getY());
             break;
         case down:
+            if (getWorld()->pebbleAt(getX(), getY()-1)){
+                return false;
+            }
             moveTo(getX(), getY()-1);
             break;
         case left:
+            if (getWorld()->pebbleAt(getX()-1, getY())){
+                return false;
+            }
             moveTo(getX()-1, getY());
             break;
         case none:
@@ -126,7 +156,7 @@ void Insect::randomDir(){
 //*******************************GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Grasshopper::Grasshopper(int x, int y, int imageID, int p):Insect(x, y, imageID, p){
+Grasshopper::Grasshopper(int x, int y, StudentWorld * w, int imageID, int p):Insect(x, y, w, imageID, p){
     
     resetDistance();
     
@@ -157,7 +187,7 @@ void Grasshopper::setDistanceZero(){
 ////////////////////////////////////////////////////////////////////////////////////
 //**************************BABY GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
-BabyGrasshopper::BabyGrasshopper(int x, int y, int imageID, int p): Grasshopper(x, y, imageID, p){
+BabyGrasshopper::BabyGrasshopper(int x, int y, StudentWorld * w, int imageID, int p): Grasshopper(x, y, w, imageID, p){
 
 }
 
@@ -169,6 +199,7 @@ void BabyGrasshopper::doSomething(){
     
     if (getPoints()<1){
         //add 100 units of food at current location
+        std::cerr<<"Ticks: "<<getWorld()->tickCount<<"  Points: "<<getPoints()<<std::endl;
         setDead();
         return;
     }
@@ -196,6 +227,7 @@ void BabyGrasshopper::doSomething(){
         randomDir();
         resetDistance();
     }
+    
     
     if(moveOne())
         sub1Walk();

@@ -23,11 +23,13 @@ public:
 
     virtual void cleanUp();
 	
-
+    bool pebbleAt(int x, int y);
+    
+    int tickCount;
 private:
     bool loadField();
     std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
-    int tickCount;
+    
     void moveAll();
     void actorMoved(Actor * a, int oldX, int oldY);
     void checkDead();
