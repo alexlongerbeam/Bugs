@@ -58,6 +58,7 @@ Insect::Insect(int x, int y, StudentWorld * w, int imageID, int p): Actor(x, y, 
     
     //Pick random direction to face
     randomDir();
+    resetTicks();
     m_points = p;
 }
 
@@ -197,9 +198,10 @@ void BabyGrasshopper::doSomething(){
 
     subtractPoints(1);
     
+    
+    
     if (getPoints()<1){
         //add 100 units of food at current location
-        std::cerr<<"Ticks: "<<getWorld()->tickCount<<"  Points: "<<getPoints()<<std::endl;
         setDead();
         return;
     }
@@ -208,6 +210,8 @@ void BabyGrasshopper::doSomething(){
         sub1Tick();
         return;
     }
+    
+    
     
     //Otherwise, grasshopper will do something this round
     

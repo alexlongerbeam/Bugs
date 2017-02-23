@@ -110,6 +110,7 @@ void StudentWorld::moveAll(){
     //Vector to keep track of objects that moved for quick reactivation
     vector<Actor *> moved;
     
+    
     for (int x=0; x<VIEW_WIDTH; x++){
         for (int y=0; y<VIEW_HEIGHT; y++){
             Actor *a;
@@ -117,7 +118,6 @@ void StudentWorld::moveAll(){
             while (i != world[x][y].end()){
                 a = *i;
                 if (a->isAlive()&&a->isActive()){
-                    //cerr<<"Do Something called"<<endl;
                     a->doSomething();
                     if (a->getX()!=x || a->getY()!=y){
                         i--;
@@ -141,6 +141,8 @@ void StudentWorld::moveAll(){
         i++;
     }
     
+    
+    
 }
 
 
@@ -152,7 +154,6 @@ void StudentWorld::checkDead(){
             while (i != world[x][y].end()){
                 a = (*i);
                 if (!a->isAlive()){
-                    cerr<<"Dying Grasshopper"<<endl;
                     world[x][y].erase(i);
                     delete a;
                     i = world[x][y].begin();
@@ -181,7 +182,7 @@ void StudentWorld::actorMoved(Actor * a, int oldX, int oldY){
     world[oldX][oldY].erase(i);
     
     //Add to new list
-    world[a->getX()][a->getY()].push_front(a);
+    world[a->getX()][a->getY()].push_back(a);
     
     
 }

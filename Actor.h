@@ -4,6 +4,8 @@
 #include "GraphObject.h"
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
+const int BABY_GRASSHOPPER_START_HEALTH = 500;
+const int ADULT_GRASSHOPPER_START_HEALTH = 1600;
 
 class StudentWorld;
 
@@ -63,7 +65,7 @@ private:
 
 class Grasshopper: public Insect{
 public:
-    Grasshopper(int x, int y, StudentWorld * w, int imageID= IID_ADULT_GRASSHOPPER, int p = 1600);
+    Grasshopper(int x, int y, StudentWorld * w, int imageID= IID_ADULT_GRASSHOPPER, int p = ADULT_GRASSHOPPER_START_HEALTH);
     virtual ~Grasshopper();
     virtual void doSomething();
     
@@ -78,7 +80,7 @@ private:
 
 class BabyGrasshopper: public Grasshopper{
 public:
-    BabyGrasshopper(int x, int y, StudentWorld * w, int imageID = IID_BABY_GRASSHOPPER, int p = 500);
+    BabyGrasshopper(int x, int y, StudentWorld * w, int imageID = IID_BABY_GRASSHOPPER, int p = BABY_GRASSHOPPER_START_HEALTH);
     virtual ~BabyGrasshopper();
     virtual void doSomething();
 };
