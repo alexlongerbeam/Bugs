@@ -2,7 +2,7 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
-
+#include <vector>
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 const int BABY_GRASSHOPPER_START_HEALTH = 500;
 const int ADULT_GRASSHOPPER_START_HEALTH = 1600;
@@ -14,11 +14,11 @@ public:
     Actor(int x, int y, StudentWorld * w, int imageID, Direction dir = right, unsigned int depth = 1);
     virtual ~Actor();
     virtual void doSomething() = 0;
+    virtual bool canMove() = 0;
     bool isAlive();
     bool isActive();
     void reActivate();
     void moved();
-    
 protected:
     void setDead();
     StudentWorld* getWorld();
@@ -34,6 +34,7 @@ public:
     EnergyHolder(int x, int y, StudentWorld * w, int imageID, int p, unsigned int depth = 1);
     virtual ~EnergyHolder();
     virtual void doSomething() = 0;
+    virtual bool canMove() = 0;
     
     void addPoints(int add);
     void subtractPoints(int sub);
@@ -48,6 +49,8 @@ class Food: public EnergyHolder{
 public:
     Food(int x, int y, StudentWorld* w, int p = 1600);
     virtual ~Food();
+    virtual bool canMove();
+
     
     virtual void doSomething();
     int pickUpFood(int amount);
@@ -59,14 +62,17 @@ public:
     Insect(int x, int y, StudentWorld * w, int imageID, int p);
     virtual ~Insect();
     virtual void doSomething() = 0;
-    
+    virtual bool canMove();
 
+    
+    virtual void stun() = 0;
 protected:
     void resetTicks();
     void sub1Tick();
     int ticksToSleep();
     void randomDir();
     bool moveOne();
+    void addTicks(int t);
     
     
 private:
@@ -83,6 +89,7 @@ public:
     virtual ~Grasshopper();
     virtual void doSomething();
     
+    virtual void stun();
 protected:
     int distanceToWalk();
     void resetDistance();
@@ -97,6 +104,8 @@ public:
     BabyGrasshopper(int x, int y, StudentWorld * w, int imageID = IID_BABY_GRASSHOPPER, int p = BABY_GRASSHOPPER_START_HEALTH);
     virtual ~BabyGrasshopper();
     virtual void doSomething();
+    
+    virtual void stun();
 };
 
 
@@ -109,6 +118,8 @@ public:
     Object(int x, int y, StudentWorld * w, int imageID, int depth = 2, Direction dir = right);
     virtual ~Object();
     
+    
+    virtual bool canMove();
     virtual void doSomething() = 0;
     virtual void attack();
 };
@@ -121,7 +132,25 @@ public:
     virtual ~Pebble();
     virtual void doSomething();
     
+};
+
+class Water: public Object{
+public:
+    Water(int x, int y, StudentWorld * w);
+    virtual ~Water();
     
+    virtual void doSomething();
+    
+private:
+    bool wasPrevious(Insect * p);
+    std::vector<Insect *> previous;
     
 };
+
+
+
+
+
+
+
 #endif // ACTOR_H_

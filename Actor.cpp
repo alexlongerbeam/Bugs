@@ -1,6 +1,8 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 #include <iostream>
+#include <vector>
+using namespace std;
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
 
@@ -88,6 +90,10 @@ void Food::addFood(int amount){
 }
 
 void Food::doSomething(){}
+
+bool Food::canMove(){
+    return false;
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************INSECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +111,9 @@ Insect::~Insect(){}
 
 
 
-
+void Insect::addTicks(int t){
+    m_ticksToSleep+=t;
+}
 
 void Insect::resetTicks(){
     m_ticksToSleep = 2;
@@ -181,7 +189,9 @@ void Insect::randomDir(){
 }
 
 
-
+bool Insect::canMove(){
+    return true;
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -213,6 +223,8 @@ void Grasshopper::sub1Walk(){
 void Grasshopper::setDistanceZero(){
     m_distanceToWalk = 0;
 }
+
+void Grasshopper::stun(){}
 
 ////////////////////////////////////////////////////////////////////////////////////
 //**************************BABY GRASSHOPPER METHODS********************************
@@ -272,6 +284,10 @@ void BabyGrasshopper::doSomething(){
 
 }
 
+
+void BabyGrasshopper::stun(){
+    addTicks(2);
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************OBJECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -281,6 +297,10 @@ Object::Object(int x, int y, StudentWorld * w, int imageID, int depth, Direction
 Object::~Object(){}
 
 void Object::attack(){}
+
+bool Object::canMove(){
+    return false;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************PEBBLE METHODS*************************************
@@ -292,9 +312,36 @@ Pebble::~Pebble(){}
 
 void Pebble::doSomething(){}
 
+////////////////////////////////////////////////////////////////////////////////////
+//********************************WATER METHODS*************************************
+////////////////////////////////////////////////////////////////////////////////////
 
+Water::Water(int x, int y, StudentWorld * w): Object(x, y, w, IID_WATER_POOL){};
 
+Water::~Water(){}
 
+bool Water::wasPrevious(Insect *p){
+    for (int i = 0; i<previous.size(); i++){
+        if (previous[i]==p)
+            return true;
+    }
+    return false;
+}
+
+void Water::doSomething(){
+    vector<Insect *> onSquare;
+    
+    
+    getWorld()->getInsects(getX(), getY(), onSquare);
+    
+    for (int i = 0; i<onSquare.size(); i++){
+        if (!wasPrevious(onSquare[i]))
+            onSquare[i]->stun();
+    }
+    
+    previous = onSquare;
+    
+}
 
 
 

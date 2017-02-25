@@ -4,6 +4,7 @@
 #include "GameWorld.h"
 #include "GameConstants.h"
 #include <list>
+#include <vector>
 #include "Actor.h"
 #include <string>
 
@@ -30,6 +31,7 @@ public:
     
     void depositFood(int x, int y, int amount);
     
+    void getInsects(int x, int y, std::vector<Insect*> &v);
     
 private:
     bool loadField();

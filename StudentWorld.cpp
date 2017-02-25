@@ -85,10 +85,14 @@ bool StudentWorld::loadField(){
                     a = new BabyGrasshopper(x,y, this);
                     world[x][y].push_front(a);
                     break;
-                //case Field::food:
-                    //a = new Food(x,y);
-                    //world[x][y].push_front(a);
-                    //break;
+                case Field::food:
+                    a = new Food(x,y,this);
+                    world[x][y].push_front(a);
+                    break;
+                case Field::water:
+                    a = new Water(x, y, this);
+                    world[x][y].push_front(a);
+                    break;
                 //case Field::poison:
                     //a = new Poison(x,y);
                     //world[x][y].push_front(a);
@@ -248,6 +252,23 @@ void StudentWorld::depositFood(int x, int y, int amount){
     }
 }
 
+
+void StudentWorld::getInsects(int x, int y, std::vector<Insect*> &v){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->canMove()){
+            Insect * p = dynamic_cast<Insect*>(*i);
+            v.push_back(p);
+        }
+            i++;
+    }
+
+    
+}
 
 
 
