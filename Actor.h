@@ -28,25 +28,39 @@ private:
     StudentWorld *m_world;
 };
 
-class Pebble: public Actor{
-public:
-    Pebble(int x, int y, StudentWorld * w);
-    virtual ~Pebble();
-    virtual void doSomething();
-    
-};
 
-class Insect: public Actor{
+class EnergyHolder: public Actor {
 public:
-    Insect(int x, int y, StudentWorld * w, int imageID, int p);
-    virtual ~Insect();
+    EnergyHolder(int x, int y, StudentWorld * w, int imageID, int p, unsigned int depth = 1);
+    virtual ~EnergyHolder();
     virtual void doSomething() = 0;
     
     void addPoints(int add);
     void subtractPoints(int sub);
     int getPoints();
     
+private:
+    int m_points;
     
+};
+
+class Food: public EnergyHolder{
+public:
+    Food(int x, int y, StudentWorld* w, int p = 1600);
+    virtual ~Food();
+    
+    virtual void doSomething();
+    int pickUpFood(int amount);
+    void addFood(int amount);
+};
+
+class Insect: public EnergyHolder{
+public:
+    Insect(int x, int y, StudentWorld * w, int imageID, int p);
+    virtual ~Insect();
+    virtual void doSomething() = 0;
+    
+
 protected:
     void resetTicks();
     void sub1Tick();
@@ -56,7 +70,7 @@ protected:
     
     
 private:
-    int m_points;
+    
     int m_ticksToSleep;
     
 };
@@ -83,5 +97,31 @@ public:
     BabyGrasshopper(int x, int y, StudentWorld * w, int imageID = IID_BABY_GRASSHOPPER, int p = BABY_GRASSHOPPER_START_HEALTH);
     virtual ~BabyGrasshopper();
     virtual void doSomething();
+};
+
+
+
+
+
+
+class Object: public Actor{
+public:
+    Object(int x, int y, StudentWorld * w, int imageID, int depth = 2, Direction dir = right);
+    virtual ~Object();
+    
+    virtual void doSomething() = 0;
+    virtual void attack();
+};
+
+
+
+class Pebble: public Object{
+public:
+    Pebble(int x, int y, StudentWorld * w);
+    virtual ~Pebble();
+    virtual void doSomething();
+    
+    
+    
 };
 #endif // ACTOR_H_

@@ -24,12 +24,17 @@ public:
     virtual void cleanUp();
 	
     bool pebbleAt(int x, int y);
+    bool foodAt(int x, int y, Food *p);
     
-    int tickCount;
+    int eatFood(int x, int y, int amount, Food * p);
+    
+    void depositFood(int x, int y, int amount);
+    
+    
 private:
     bool loadField();
     std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
-    
+    int tickCount;
     void moveAll();
     void actorMoved(Actor * a, int oldX, int oldY);
     void checkDead();

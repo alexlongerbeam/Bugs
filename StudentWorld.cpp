@@ -205,11 +205,52 @@ bool StudentWorld::pebbleAt(int x, int y){
     return false;
 }
     
+
+
+
+bool StudentWorld::foodAt(int x, int y, Food * p){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    Actor *a;
+    while (i != li.end()){
+        a = *i;
+        p = dynamic_cast<Food*>(a);
+        if (p!=nullptr)
+            //Food is present
+            return true;
+        i++;
+    }
+    
+    return false;
+}
+
+int StudentWorld::eatFood(int x, int y, int amount, Food * a){
+    Food * p;
+    
+    if (!foodAt(x, y, p))
+        return 0;
     
     
+    return p->pickUpFood(amount);
     
+}
+
+void StudentWorld::depositFood(int x, int y, int amount){
+    Food *p;
     
-    
+    if (foodAt(x, y, p)){
+        p->addFood(amount);
+    }
+    else{
+        p = new Food(x, y, this, amount);
+    }
+}
+
+
+
+
     
     
 

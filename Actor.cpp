@@ -39,42 +39,71 @@ void Actor::reActivate(){
 void Actor::moved(){
     m_active = false;
 }
+
 ////////////////////////////////////////////////////////////////////////////////////
-//*******************************PEBBLE METHODS*************************************
+//*******************************ENERGY METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Pebble::Pebble(int x, int y, StudentWorld * w):Actor(x, y, w, IID_ROCK, right){}
+EnergyHolder::EnergyHolder(int x, int y, StudentWorld * w, int imageID, int p, unsigned int depth): Actor(x, y, w, imageID, right, depth){
+    
+    m_points = p;
+}
 
-Pebble::~Pebble(){}
+EnergyHolder::~EnergyHolder(){}
 
-void Pebble::doSomething(){}
+void EnergyHolder::addPoints(int add){
+    m_points += add;
+}
+void EnergyHolder::subtractPoints(int sub){
+    m_points -= sub;
+}
+int EnergyHolder::getPoints(){
+    return m_points;
+}
 
 
+////////////////////////////////////////////////////////////////////////////////////
+//*********************************FOOD METHODS*************************************
+////////////////////////////////////////////////////////////////////////////////////
+
+Food::Food(int x, int y, StudentWorld* w, int p): EnergyHolder(x, y, w, IID_FOOD, p, 2){}
+Food::~Food(){}
+
+int Food::pickUpFood(int amount){
+    int points = getPoints();
+    if (points>amount){
+        subtractPoints(amount);
+        return amount;
+    }
+    else{
+        subtractPoints(points);
+        setDead();
+        return points;
+    }
+    
+}
+
+void Food::addFood(int amount){
+    addPoints(amount);
+}
+
+void Food::doSomething(){}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************INSECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Insect::Insect(int x, int y, StudentWorld * w, int imageID, int p): Actor(x, y, w, imageID){
+Insect::Insect(int x, int y, StudentWorld * w, int imageID, int p): EnergyHolder(x, y, w, imageID, p){
     
     //Pick random direction to face
     randomDir();
     resetTicks();
-    m_points = p;
+    
 }
 
 Insect::~Insect(){}
 
 
 
-void Insect::addPoints(int add){
-    m_points += add;
-}
-void Insect::subtractPoints(int sub){
-    m_points -= sub;
-}
-int Insect::getPoints(){
-    return m_points;
-}
 
 
 
@@ -243,7 +272,25 @@ void BabyGrasshopper::doSomething(){
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+//*******************************OBJECT METHODS*************************************
+////////////////////////////////////////////////////////////////////////////////////
 
+Object::Object(int x, int y, StudentWorld * w, int imageID, int depth, Direction dir): Actor(x, y, w, imageID, dir, depth){};
+
+Object::~Object(){}
+
+void Object::attack(){}
+
+////////////////////////////////////////////////////////////////////////////////////
+//*******************************PEBBLE METHODS*************************************
+////////////////////////////////////////////////////////////////////////////////////
+
+Pebble::Pebble(int x, int y, StudentWorld * w):Object(x, y, w, IID_ROCK, 1){}
+
+Pebble::~Pebble(){}
+
+void Pebble::doSomething(){}
 
 
 
