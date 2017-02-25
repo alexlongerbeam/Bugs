@@ -93,10 +93,10 @@ bool StudentWorld::loadField(){
                     a = new Water(x, y, this);
                     world[x][y].push_front(a);
                     break;
-                //case Field::poison:
-                    //a = new Poison(x,y);
-                    //world[x][y].push_front(a);
-                    //break;
+                case Field::poison:
+                    a = new Poison(x,y, this);
+                    world[x][y].push_front(a);
+                    break;
                 //All anthill cases
                     
                 case Field::empty:
@@ -212,7 +212,7 @@ bool StudentWorld::pebbleAt(int x, int y){
 
 
 
-bool StudentWorld::foodAt(int x, int y, Food * p){
+bool StudentWorld::foodAt(int x, int y, Food *& p){
     list<Actor *> li = world[x][y];
     
     list<Actor *>::iterator i = li.begin();
@@ -221,22 +221,23 @@ bool StudentWorld::foodAt(int x, int y, Food * p){
     while (i != li.end()){
         a = *i;
         p = dynamic_cast<Food*>(a);
-        if (p!=nullptr)
+        if (p!=nullptr){
             //Food is present
             return true;
+        }
         i++;
     }
     
     return false;
 }
 
-int StudentWorld::eatFood(int x, int y, int amount, Food * a){
+int StudentWorld::eatFood(int x, int y, int amount){
     Food * p;
     
     if (!foodAt(x, y, p))
         return 0;
     
-    
+
     return p->pickUpFood(amount);
     
 }

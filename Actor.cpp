@@ -82,7 +82,7 @@ int Food::pickUpFood(int amount){
         setDead();
         return points;
     }
-    
+    return 0;
 }
 
 void Food::addFood(int amount){
@@ -102,7 +102,7 @@ Insect::Insect(int x, int y, StudentWorld * w, int imageID, int p): EnergyHolder
     
     //Pick random direction to face
     randomDir();
-    resetTicks();
+    m_ticksToSleep = 0;
     
 }
 
@@ -225,7 +225,7 @@ void Grasshopper::setDistanceZero(){
 }
 
 void Grasshopper::stun(){}
-
+void Grasshopper::poison(){}
 ////////////////////////////////////////////////////////////////////////////////////
 //**************************BABY GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -240,9 +240,10 @@ void BabyGrasshopper::doSomething(){
     subtractPoints(1);
     
     
+    cerr<<getPoints()<<endl;
     
     if (getPoints()<1){
-        //add 100 units of food at current location
+        getWorld()->depositFood(getX(), getY(), 100);
         setDead();
         return;
     }
@@ -265,6 +266,16 @@ void BabyGrasshopper::doSomething(){
 //    }
     
     //Attempt to eat food, not for part 1
+    int foodEaten = getWorld()->eatFood(getX(), getY(), 200);
+    
+    if (foodEaten!=0){
+        addPoints(foodEaten);
+        bool cont = randInt(0, 1);
+        if (!cont){
+            resetTicks();
+            return;
+        }
+    }
     
     
     //Continue walking
@@ -287,6 +298,10 @@ void BabyGrasshopper::doSomething(){
 
 void BabyGrasshopper::stun(){
     addTicks(2);
+}
+
+void BabyGrasshopper::poison(){
+    subtractPoints(150);
 }
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************OBJECT METHODS*************************************
@@ -316,7 +331,7 @@ void Pebble::doSomething(){}
 //********************************WATER METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
-Water::Water(int x, int y, StudentWorld * w): Object(x, y, w, IID_WATER_POOL){};
+Water::Water(int x, int y, StudentWorld * w): Object(x, y, w, IID_WATER_POOL){}
 
 Water::~Water(){}
 
@@ -343,9 +358,22 @@ void Water::doSomething(){
     
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+//********************************WATER METHODS*************************************
+////////////////////////////////////////////////////////////////////////////////////
+Poison::Poison(int x, int y, StudentWorld *w): Object(x, y, w, IID_POISON){}
+Poison::~Poison(){}
 
-
-
+void Poison::doSomething(){
+    vector<Insect *> onSquare;
+    
+    
+    getWorld()->getInsects(getX(), getY(), onSquare);
+    for (int i = 0; i<onSquare.size(); i++){
+            onSquare[i]->poison();
+    }
+    
+}
 
 
 

@@ -66,6 +66,7 @@ public:
 
     
     virtual void stun() = 0;
+    virtual void poison() = 0;
 protected:
     void resetTicks();
     void sub1Tick();
@@ -90,6 +91,7 @@ public:
     virtual void doSomething();
     
     virtual void stun();
+    virtual void poison();
 protected:
     int distanceToWalk();
     void resetDistance();
@@ -106,6 +108,7 @@ public:
     virtual void doSomething();
     
     virtual void stun();
+    virtual void poison();
 };
 
 
@@ -147,6 +150,13 @@ private:
     
 };
 
+class Poison: public Object{
+public:
+    Poison(int x, int y, StudentWorld *w);
+    virtual ~Poison();
+    
+    virtual void doSomething();
+};
 
 
 

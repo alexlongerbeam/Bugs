@@ -25,9 +25,9 @@ public:
     virtual void cleanUp();
 	
     bool pebbleAt(int x, int y);
-    bool foodAt(int x, int y, Food *p);
+    bool foodAt(int x, int y, Food *&p);
     
-    int eatFood(int x, int y, int amount, Food * p);
+    int eatFood(int x, int y, int amount);
     
     void depositFood(int x, int y, int amount);
     
