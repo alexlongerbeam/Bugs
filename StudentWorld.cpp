@@ -249,30 +249,43 @@ void StudentWorld::depositFood(int x, int y, int amount){
         p->addFood(amount);
     }
     else{
-        p = new Food(x, y, this, amount);
+        Actor * a = new Food(x, y, this, amount);
+        newActor(x, y, a);
     }
 }
 
 
-void StudentWorld::getInsects(int x, int y, std::vector<Insect*> &v){
+void StudentWorld::getInsects(int x, int y, std::vector<Insect*> &v, Actor* source){
     list<Actor *> li = world[x][y];
     
     list<Actor *>::iterator i = li.begin();
     
-    
-    while (i != li.end()){
-        if ((*i)->canMove()){
-            Insect * p = dynamic_cast<Insect*>(*i);
-            v.push_back(p);
+    //If source is an insect, make sure not to include it
+    if (source->canMove()){
+        while (i != li.end()){
+            if ((*i)->canMove() && ((*i)!=source)){
+                Insect * p = dynamic_cast<Insect*>(*i);
+                v.push_back(p);
+            }
+                i++;
         }
-            i++;
     }
-
-    
+    //otherwise every insect can be included
+    else{
+        while (i != li.end()){
+            if ((*i)->canMove()){
+                Insect * p = dynamic_cast<Insect*>(*i);
+                v.push_back(p);
+            }
+            i++;
+        }
+    }
 }
 
 
-
+void StudentWorld::newActor(int x, int y, Actor *a){
+    world[x][y].push_back(a);
+}
     
     
 

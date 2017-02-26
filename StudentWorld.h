@@ -31,7 +31,9 @@ public:
     
     void depositFood(int x, int y, int amount);
     
-    void getInsects(int x, int y, std::vector<Insect*> &v);
+    void getInsects(int x, int y, std::vector<Insect*> &v, Actor* source);
+    
+    void newActor(int x, int y, Actor * a);
     
 private:
     bool loadField();

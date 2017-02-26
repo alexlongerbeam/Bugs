@@ -192,6 +192,26 @@ void Insect::randomDir(){
 bool Insect::canMove(){
     return true;
 }
+
+void Insect::die(){
+    getWorld()->depositFood(getX(), getY(), 100);
+    setDead();
+}
+
+bool Insect::biteRandom(int damage){
+    vector<Insect *> v;
+    getWorld()->getInsects(getX(), getY(), v, this);
+    
+    if (v.empty())
+        return false;
+    
+    
+    int insect = randInt(0, v.size()-1);
+    
+    v[insect]->getBitten(damage);
+    
+    return true;
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +224,17 @@ Grasshopper::Grasshopper(int x, int y, StudentWorld * w, int imageID, int p):Ins
 
 Grasshopper::~Grasshopper(){}
 
-void Grasshopper::doSomething(){}
+void Grasshopper::doSomething(){
+    if (beginningCommon()){
+        if (moveUnique()){
+            endCommon();
+        }
+        resetTicks();
+    }
+    
+    
+    
+}
 
 
 
@@ -226,46 +256,61 @@ void Grasshopper::setDistanceZero(){
 
 void Grasshopper::stun(){}
 void Grasshopper::poison(){}
-////////////////////////////////////////////////////////////////////////////////////
-//**************************BABY GRASSHOPPER METHODS********************************
-////////////////////////////////////////////////////////////////////////////////////
-BabyGrasshopper::BabyGrasshopper(int x, int y, StudentWorld * w, int imageID, int p): Grasshopper(x, y, w, imageID, p){
-
+void Grasshopper::getBitten(int amount){
+    subtractPoints(amount);
+    cerr<<"Grasshopper bitten"<<endl;
+    if (getPoints()<=0){
+        die();
+        return;
+    }
+    
+    //50% chance of bite back
+    bool cont = randInt(0, 1);
+    if (cont){
+        cerr<<"Biting back"<<endl;
+        biteRandom(50);
+    }
+    
+    
+    
 }
 
-BabyGrasshopper::~BabyGrasshopper(){}
-
-void BabyGrasshopper::doSomething(){
-
+//returns whether or not the doSomething function should continue
+bool Grasshopper::beginningCommon(){
     subtractPoints(1);
     
-    
     cerr<<getPoints()<<endl;
-    
     if (getPoints()<1){
-        getWorld()->depositFood(getX(), getY(), 100);
-        setDead();
-        return;
+        die();
+        return false;
     }
     
     if (ticksToSleep()>0){
         sub1Tick();
-        return;
+        return false;
     }
     
+    return true;
+}
+
+bool Grasshopper::moveUnique(){
+    //1 in 3 chance of trying to bite another
+    int bite = randInt(0, 2);
+    if (bite==0){
+        if (biteRandom(50))
+            return false;
+    }
+    
+    //If it didn't decide to bite or wasn't able to bite
     
     
-    //Otherwise, grasshopper will do something this round
     
-    //FOR NOW, NO Change to adult
-//    if (getPoints()>=1600){
-//        //Turn into adult grasshopper
-//        //Add grasshopper in same location
-//        //Set baby status to dead
-//        return;
-//    }
     
-    //Attempt to eat food, not for part 1
+    return true;
+}
+
+void Grasshopper::endCommon(){
+    //Attempt to eat food
     int foodEaten = getWorld()->eatFood(getX(), getY(), 200);
     
     if (foodEaten!=0){
@@ -276,22 +321,36 @@ void BabyGrasshopper::doSomething(){
             return;
         }
     }
-    
-    
     //Continue walking
     if (distanceToWalk()==0){
         randomDir();
         resetDistance();
     }
-    
-    
     if(moveOne())
         sub1Walk();
     else
         setDistanceZero();
+}
+////////////////////////////////////////////////////////////////////////////////////
+//**************************BABY GRASSHOPPER METHODS********************************
+////////////////////////////////////////////////////////////////////////////////////
+BabyGrasshopper::BabyGrasshopper(int x, int y, StudentWorld * w, int imageID, int p): Grasshopper(x, y, w, imageID, p){
+
+}
+
+BabyGrasshopper::~BabyGrasshopper(){}
+
+bool BabyGrasshopper::moveUnique(){
     
-    resetTicks();
+    if (getPoints()>=1600){
+        //Turn into adult grasshopper
+        Actor * a = new Grasshopper(getX(), getY(), getWorld());
+        getWorld()->newActor(getX(), getY(), a);
+        setDead();
+        return false;
+    }
     
+    return true;
 
 }
 
@@ -302,6 +361,15 @@ void BabyGrasshopper::stun(){
 
 void BabyGrasshopper::poison(){
     subtractPoints(150);
+    if (getPoints()<=0)
+        die();
+}
+
+void BabyGrasshopper::getBitten(int amount){
+    subtractPoints(amount);
+    cerr<<"Baby bitten"<<endl;
+    if (getPoints()<=0)
+        die();
 }
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************OBJECT METHODS*************************************
@@ -347,7 +415,7 @@ void Water::doSomething(){
     vector<Insect *> onSquare;
     
     
-    getWorld()->getInsects(getX(), getY(), onSquare);
+    getWorld()->getInsects(getX(), getY(), onSquare, this);
     
     for (int i = 0; i<onSquare.size(); i++){
         if (!wasPrevious(onSquare[i]))
@@ -359,7 +427,7 @@ void Water::doSomething(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-//********************************WATER METHODS*************************************
+//********************************POISON METHODS************************************
 ////////////////////////////////////////////////////////////////////////////////////
 Poison::Poison(int x, int y, StudentWorld *w): Object(x, y, w, IID_POISON){}
 Poison::~Poison(){}
@@ -368,7 +436,7 @@ void Poison::doSomething(){
     vector<Insect *> onSquare;
     
     
-    getWorld()->getInsects(getX(), getY(), onSquare);
+    getWorld()->getInsects(getX(), getY(), onSquare, this);
     for (int i = 0; i<onSquare.size(); i++){
             onSquare[i]->poison();
     }

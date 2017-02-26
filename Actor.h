@@ -67,6 +67,7 @@ public:
     
     virtual void stun() = 0;
     virtual void poison() = 0;
+    virtual void getBitten(int amount) = 0;
 protected:
     void resetTicks();
     void sub1Tick();
@@ -74,6 +75,8 @@ protected:
     void randomDir();
     bool moveOne();
     void addTicks(int t);
+    void die();
+    bool biteRandom(int damage);
     
     
 private:
@@ -92,11 +95,15 @@ public:
     
     virtual void stun();
     virtual void poison();
+    virtual void getBitten(int amount);
 protected:
     int distanceToWalk();
     void resetDistance();
     void sub1Walk();
     void setDistanceZero();
+    bool beginningCommon();
+    void endCommon();
+    virtual bool moveUnique();
 private:
     int m_distanceToWalk;
 };
@@ -105,10 +112,13 @@ class BabyGrasshopper: public Grasshopper{
 public:
     BabyGrasshopper(int x, int y, StudentWorld * w, int imageID = IID_BABY_GRASSHOPPER, int p = BABY_GRASSHOPPER_START_HEALTH);
     virtual ~BabyGrasshopper();
-    virtual void doSomething();
+    
     
     virtual void stun();
     virtual void poison();
+    virtual void getBitten(int amount);
+    
+    virtual bool moveUnique();
 };
 
 
