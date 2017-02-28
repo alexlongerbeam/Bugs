@@ -82,7 +82,7 @@ int Food::pickUpFood(int amount){
         setDead();
         return points;
     }
-    return 0;
+    
 }
 
 void Food::addFood(int amount){
@@ -94,6 +94,77 @@ void Food::doSomething(){}
 bool Food::canMove(){
     return false;
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+//*******************************ANTHILL METHODS************************************
+////////////////////////////////////////////////////////////////////////////////////
+
+Anthill::Anthill(int x, int y, StudentWorld * w, Compiler * comp, int anthillNum, int p, unsigned int depth):EnergyHolder(x, y, w, IID_ANT_HILL, p, depth){
+    
+    m_compiler = comp;
+    m_colonyNum = anthillNum;
+
+}
+
+Anthill::~Anthill(){}
+
+bool Anthill::canMove(){
+    return false;
+}
+
+void Anthill::doSomething(){
+    
+    subtractPoints(1);
+    
+    
+    //check if dead
+    if (getPoints()<=0){
+        setDead();
+        return;
+    }
+    
+    //try to eat food
+    int eaten = getWorld()->eatFood(getX(), getY(), 10000);
+    
+    if (eaten!=0){
+        addPoints(eaten);
+        return;
+    }
+    
+    
+    //check to try and make new ant
+    if (getPoints()>=2000){
+        //add ant
+        subtractPoints(1500);
+        getWorld()->addAntNum(m_colonyNum);
+    }
+    
+    
+    
+    
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+//*******************************PHEROMONE METHODS**********************************
+////////////////////////////////////////////////////////////////////////////////////
+
+
+Pheromone::Pheromone(int x, int y, StudentWorld * w, int colonyNum, int imageID, int p, unsigned int depth): EnergyHolder(x, y, w, imageID, p, depth){
+    m_colonyNum = colonyNum;
+}
+Pheromone::~Pheromone(){}
+
+void Pheromone::doSomething(){
+    subtractPoints(1);
+    
+    if (getPoints()==0)
+        setDead();
+}
+
+bool Pheromone::canMove(){
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************INSECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -194,6 +265,7 @@ bool Insect::canMove(){
 }
 
 void Insect::die(){
+    cerr<<"DEATH"<<endl;
     getWorld()->depositFood(getX(), getY(), 100);
     setDead();
 }
@@ -279,7 +351,7 @@ void Grasshopper::getBitten(int amount){
 bool Grasshopper::beginningCommon(){
     subtractPoints(1);
     
-    cerr<<getPoints()<<endl;
+    //cerr<<getPoints()<<endl;
     if (getPoints()<1){
         die();
         return false;

@@ -8,6 +8,7 @@ const int BABY_GRASSHOPPER_START_HEALTH = 500;
 const int ADULT_GRASSHOPPER_START_HEALTH = 1600;
 
 class StudentWorld;
+class Compiler;
 
 class Actor: public GraphObject{
 public:
@@ -57,6 +58,31 @@ public:
     void addFood(int amount);
 };
 
+
+class Anthill: public EnergyHolder{
+public:
+    Anthill(int x, int y, StudentWorld * w, Compiler * comp, int anthillNum, int p = 8999, unsigned int depth = 2);
+    virtual ~Anthill();
+    
+    virtual void doSomething();
+    virtual bool canMove();
+    
+private:
+    Compiler * m_compiler;
+    int m_colonyNum;
+    
+};
+
+class Pheromone: public EnergyHolder{
+public:
+    Pheromone(int x, int y, StudentWorld * w, int colonyNum, int imageID, int p = 256, unsigned int depth = 2);
+    virtual ~Pheromone();
+    
+    virtual void doSomething();
+    virtual bool canMove();
+private:
+    int m_colonyNum;
+};
 class Insect: public EnergyHolder{
 public:
     Insect(int x, int y, StudentWorld * w, int imageID, int p);

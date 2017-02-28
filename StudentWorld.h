@@ -10,6 +10,8 @@
 
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
+class Compiler;
+
 class StudentWorld : public GameWorld
 {
 public:
@@ -35,13 +37,16 @@ public:
     
     void newActor(int x, int y, Actor * a);
     
+    void addAntNum(int colony);
 private:
-    bool loadField();
-    std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
-    int tickCount;
+    bool loadField(std::vector<Compiler *> compilers);
     void moveAll();
     void actorMoved(Actor * a, int oldX, int oldY);
     void checkDead();
+    
+    std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
+    int tickCount;
+    std::vector<int> antNums;
 };
 
 #endif // STUDENTWORLD_H_

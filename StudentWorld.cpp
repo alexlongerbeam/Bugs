@@ -1,6 +1,7 @@
 #include "StudentWorld.h"
 #include "Field.h"
 #include "Actor.h"
+#include "Compiler.h"
 #include <string>
 #include <iostream>
 #include <list>
@@ -24,7 +25,29 @@ int StudentWorld::init()
     {
         
         tickCount = 0;
-        if (!loadField()){
+        Compiler *compilerForEntranti;
+        
+        vector<string> fileNames = getFilenamesOfAntPrograms();
+        vector<Compiler *> compilerPtrs;
+        string error;
+        
+        for (int i = 0; i<fileNames.size(); i++){
+            compilerForEntranti = new Compiler;
+            if (!compilerForEntranti->compile(fileNames[i], error)){
+                setError(fileNames[i] + " " + error);
+                delete compilerForEntranti;
+                for (int i = 0; i<compilerPtrs.size(); i++)
+                    delete compilerPtrs[i];
+                return GWSTATUS_LEVEL_ERROR;
+            }
+            compilerPtrs.push_back(compilerForEntranti);
+            antNums.push_back(0);
+        }
+        
+        
+        
+        
+        if (!loadField(compilerPtrs)){
             cerr<<"Error loading field"<<endl;
             return GWSTATUS_LEVEL_ERROR;
         }
@@ -61,7 +84,7 @@ void StudentWorld::cleanUp()
 
 
 
-bool StudentWorld::loadField(){
+bool StudentWorld::loadField(vector<Compiler *> compilers){
         Field f;
         string fieldFile = getFieldFilename();
         string error;
@@ -98,6 +121,22 @@ bool StudentWorld::loadField(){
                     world[x][y].push_front(a);
                     break;
                 //All anthill cases
+                case Field::anthill0:
+                    a = new Anthill(x, y, this, compilers[0], 0);
+                    world[x][y].push_front(a);
+                    break;
+                case Field::anthill1:
+                    a = new Anthill(x, y, this, compilers[1], 1);
+                    world[x][y].push_front(a);
+                    break;
+                case Field::anthill2:
+                    a = new Anthill(x, y, this, compilers[2], 2);
+                    world[x][y].push_front(a);
+                    break;
+                case Field::anthill3:
+                    a = new Anthill(x, y, this, compilers[3], 3);
+                    world[x][y].push_front(a);
+                    break;
                     
                 case Field::empty:
                 default:
@@ -288,5 +327,23 @@ void StudentWorld::newActor(int x, int y, Actor *a){
 }
     
     
+
+
+
+
+void StudentWorld::addAntNum(int colony){
+    antNums[colony] += 1;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
