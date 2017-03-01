@@ -2,13 +2,14 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
+#include "Compiler.h"
 #include <vector>
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 const int BABY_GRASSHOPPER_START_HEALTH = 500;
 const int ADULT_GRASSHOPPER_START_HEALTH = 1600;
 
 class StudentWorld;
-class Compiler;
+
 
 class Actor: public GraphObject{
 public:
@@ -67,6 +68,7 @@ public:
     virtual void doSomething();
     virtual bool canMove();
     
+    void addAnt();
 private:
     Compiler * m_compiler;
     int m_colonyNum;
@@ -103,6 +105,7 @@ protected:
     void addTicks(int t);
     void die();
     bool biteRandom(int damage);
+    bool beginningCommon();
     
     
 private:
@@ -111,7 +114,29 @@ private:
     
 };
 
-
+class Ant: public Insect{
+public:
+    Ant(int x, int y, StudentWorld *w, Compiler * comp, int colony, int imageID, int p = 1500);
+    ~Ant();
+    
+    virtual void doSomething();
+    
+    virtual void stun();
+    virtual void poison();
+    virtual void getBitten(int amount);
+    
+private:
+    bool runCommand(const Compiler::Command& c);
+    void evaluateIf(const Compiler::Command& c);
+    
+    Compiler * m_compiler;
+    int m_colonyNum;
+    int foodHeld;
+    bool previouslyBitten;
+    bool previouslyBlocked;
+    int m_counter;
+    int lastRandomNum;
+};
 
 class Grasshopper: public Insect{
 public:
@@ -127,7 +152,6 @@ protected:
     void resetDistance();
     void sub1Walk();
     void setDistanceZero();
-    bool beginningCommon();
     void endCommon();
     virtual bool moveUnique();
 private:

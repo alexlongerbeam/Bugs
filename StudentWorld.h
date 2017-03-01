@@ -27,7 +27,8 @@ public:
     virtual void cleanUp();
 	
     bool pebbleAt(int x, int y);
-    bool foodAt(int x, int y, Food *&p);
+    
+    bool foodAt(int x, int y);
     
     int eatFood(int x, int y, int amount);
     
@@ -38,11 +39,16 @@ public:
     void newActor(int x, int y, Actor * a);
     
     void addAntNum(int colony);
+    
+    void addPheromone(int x, int y, int colony);
+    
+    bool onAnthill(int x, int y, int colony);
 private:
     bool loadField(std::vector<Compiler *> compilers);
     void moveAll();
     void actorMoved(Actor * a, int oldX, int oldY);
     void checkDead();
+    bool foodAt(int x, int y, Food *&p);
     
     std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
     int tickCount;

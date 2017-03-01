@@ -336,7 +336,25 @@ void StudentWorld::addAntNum(int colony){
 }
 
 
+bool StudentWorld::foodAt(int x, int y){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    Actor *a;
+    while (i != li.end()){
+        a = *i;
+        a = dynamic_cast<Food*>(a);
+        if (a!=nullptr && a->isAlive()){
+            //Food is present
+            return true;
+        }
+        i++;
+    }
+    
+    return false;
 
+}
 
 
 

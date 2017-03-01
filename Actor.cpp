@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "StudentWorld.h"
+#include "Compiler.h"
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -144,6 +145,29 @@ void Anthill::doSomething(){
     
 }
 
+
+void Anthill::addAnt(){
+    Actor * a;
+    switch(m_colonyNum){
+        case 0:
+            a = new Ant(getX(), getY(), getWorld(), m_compiler, m_colonyNum, IID_ANT_TYPE0);
+            break;
+        case 1:
+            a = new Ant(getX(), getY(), getWorld(), m_compiler, m_colonyNum, IID_ANT_TYPE1);
+            break;
+        case 2:
+            a = new Ant(getX(), getY(), getWorld(), m_compiler, m_colonyNum, IID_ANT_TYPE2);
+            break;
+        case 3:
+            a = new Ant(getX(), getY(), getWorld(), m_compiler, m_colonyNum, IID_ANT_TYPE3);
+            break;
+        default:
+            cerr<<"Error creating Ant"<<endl;
+            return;
+    }
+    
+    getWorld()->newActor(getX(), getY(), a);
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************PHEROMONE METHODS**********************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -284,6 +308,183 @@ bool Insect::biteRandom(int damage){
     
     return true;
 }
+
+
+//returns whether or not the doSomething function should continue
+bool Insect::beginningCommon(){
+    subtractPoints(1);
+    
+    //cerr<<getPoints()<<endl;
+    if (getPoints()<1){
+        die();
+        return false;
+    }
+    
+    if (ticksToSleep()>0){
+        sub1Tick();
+        return false;
+    }
+    
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+//**********************************ANT METHODS*************************************
+////////////////////////////////////////////////////////////////////////////////////
+
+Ant::Ant(int x, int y, StudentWorld *w, Compiler * comp, int colony, int imageID, int p): Insect(x, y, w, imageID, p){
+    
+    m_compiler = comp;
+    m_colonyNum = colony;
+    foodHeld = 0;
+    previouslyBitten = false;
+    previouslyBlocked = false;
+    m_counter = 0;
+    lastRandomNum = 0;
+}
+
+Ant::~Ant(){}
+
+void Ant::doSomething(){
+    if (!beginningCommon())
+        return;
+    bool cont;
+    Compiler::Command cmd;
+    
+    for (int i = 0; i<10; i++){
+        if (!m_compiler->getCommand(m_counter, cmd)){
+            setDead();
+            return;
+        }
+        m_counter++;
+        //runCommand() could change m_counter
+        if (!runCommand(cmd))
+            return;
+    }
+    
+}
+
+void Ant::stun(){
+    addTicks(2);
+}
+void Ant::poison(){
+    subtractPoints(150);
+    if (getPoints()<=0)
+        die();
+}
+void Ant::getBitten(int amount){
+    subtractPoints(amount);
+    previouslyBitten = true;
+    
+    if (getPoints()<=0)
+        die();
+    
+}
+
+//returns true if doSomething should continue
+bool Ant::runCommand(const Compiler::Command& c){
+    
+    switch(c.opcode){
+        case Compiler::moveForward:
+            if (moveOne()){
+                previouslyBlocked = false;
+                previouslyBitten = false;
+            }
+            else{
+                previouslyBlocked = true;
+            }
+            return false;
+        case Compiler::eatFood:
+            if (foodHeld>=100){
+                addPoints(100);
+                foodHeld-=100;
+            }
+            else{
+                addPoints(foodHeld);
+                foodHeld = 0;
+            }
+            return false;
+        case Compiler::dropFood:
+            getWorld()->depositFood(getX(), getY(), foodHeld);
+            foodHeld = 0;
+            return false;
+        case Compiler::bite:
+            //CHANGE THIS TO WORK FOR ANTS
+            biteRandom(15);
+            return false;
+        case Compiler::pickupFood:
+            foodHeld += getWorld()->eatFood(getX(), getY(), max(400, 1800-foodHeld));
+            return false;
+        case Compiler:: emitPheromone:
+            getWorld()->addPheromone(getX(), getY(), m_colonyNum);
+            return false;
+        case Compiler::faceRandomDirection:
+            randomDir();
+            return false;
+        case Compiler::rotateClockwise:
+        case Compiler::rotateCounterClockwise:
+            return false;
+        case Compiler::generateRandomNumber:
+            lastRandomNum = randInt(0, stoi(c.operand1) - 1);
+            return true;
+        case Compiler::goto_command:
+            m_counter = stoi(c.operand1);
+            return true;
+        case Compiler::if_command:
+            evaluateIf(c);
+            return true;
+            
+            
+        default:
+            cerr<<"Problem executing statements"<<endl;
+            return false;
+    }
+    
+    
+}
+
+void Ant::evaluateIf(const Compiler::Command& c){
+    
+    int ifCode = stoi(c.operand1);
+    bool outcome = false;
+    switch(ifCode){
+        case 0: //smellDanger
+        case 1: //smellPheromone
+        case 2: //wasBit
+        case 3: //amCarryingFood
+            if (foodHeld>0)
+                outcome = true;
+            break;
+        case 4: //amHungry
+            if (getPoints()<=25)
+                outcome = true;
+            break;
+        case 5: //amOnMyAnthill
+            if (getWorld()->onAnthill(getX(), getY(), m_colonyNum))
+                outcome = true;
+            break;
+        case 6: //AmOnFood
+            if (getWorld()->foodAt(getX(), getY()))
+                outcome = true;
+            break;
+        case 7: //amStandingWithEnemy
+            //********Figure this out**************
+            break;
+        case 8: //wasBlockedbyMoving
+        case 9: //lastNumZero
+            if (lastRandomNum==0)
+                outcome = true;
+            break;
+            
+        default:
+            cerr<<"Error checking if statement"<<endl;
+    }
+    
+    if (outcome)
+        m_counter = stoi(c.operand2);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************GRASSHOPPER METHODS********************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -347,23 +548,6 @@ void Grasshopper::getBitten(int amount){
     
 }
 
-//returns whether or not the doSomething function should continue
-bool Grasshopper::beginningCommon(){
-    subtractPoints(1);
-    
-    //cerr<<getPoints()<<endl;
-    if (getPoints()<1){
-        die();
-        return false;
-    }
-    
-    if (ticksToSleep()>0){
-        sub1Tick();
-        return false;
-    }
-    
-    return true;
-}
 
 bool Grasshopper::moveUnique(){
     //1 in 3 chance of trying to bite another
@@ -374,7 +558,7 @@ bool Grasshopper::moveUnique(){
     }
     
     //If it didn't decide to bite or wasn't able to bite
-    
+    cerr<<"IMPLEMENT GRASSHOPPER JUMP IN CIRCLE"<<endl;
     
     
     
