@@ -43,16 +43,27 @@ public:
     void addPheromone(int x, int y, int colony);
     
     bool onAnthill(int x, int y, int colony);
+    
+    bool isPheromone(int x, int y, int colony);
+    
+    bool isDanger(int x, int y, int colony);
+    
+    bool isEnemy(int x, int y, int colony);
+    
+    bool biteRandom(int x, int y, int damage, Actor* source, int colony = -1);
+    
 private:
     bool loadField(std::vector<Compiler *> compilers);
     void moveAll();
     void actorMoved(Actor * a, int oldX, int oldY);
     void checkDead();
     bool foodAt(int x, int y, Food *&p);
+    bool getPheromone(int x, int y, int colony, Pheromone* p);
     
     std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
     int tickCount;
     std::vector<int> antNums;
+    int numColonies;
 };
 
 #endif // STUDENTWORLD_H_

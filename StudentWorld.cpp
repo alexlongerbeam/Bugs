@@ -30,7 +30,7 @@ int StudentWorld::init()
         vector<string> fileNames = getFilenamesOfAntPrograms();
         vector<Compiler *> compilerPtrs;
         string error;
-        
+        numColonies = fileNames.size();
         for (int i = 0; i<fileNames.size(); i++){
             compilerForEntranti = new Compiler;
             if (!compilerForEntranti->compile(fileNames[i], error)){
@@ -122,20 +122,28 @@ bool StudentWorld::loadField(vector<Compiler *> compilers){
                     break;
                 //All anthill cases
                 case Field::anthill0:
-                    a = new Anthill(x, y, this, compilers[0], 0);
-                    world[x][y].push_front(a);
+                    if (numColonies>0){
+                        a = new Anthill(x, y, this, compilers[0], 0);
+                        world[x][y].push_front(a);
+                    }
                     break;
                 case Field::anthill1:
-                    a = new Anthill(x, y, this, compilers[1], 1);
-                    world[x][y].push_front(a);
+                    if (numColonies>1){
+                        a = new Anthill(x, y, this, compilers[1], 1);
+                        world[x][y].push_front(a);
+                    }
                     break;
                 case Field::anthill2:
-                    a = new Anthill(x, y, this, compilers[2], 2);
-                    world[x][y].push_front(a);
+                    if (numColonies>2){
+                        a = new Anthill(x, y, this, compilers[2], 2);
+                        world[x][y].push_front(a);
+                    }
                     break;
                 case Field::anthill3:
-                    a = new Anthill(x, y, this, compilers[3], 3);
-                    world[x][y].push_front(a);
+                    if (numColonies>3){
+                        a = new Anthill(x, y, this, compilers[3], 3);
+                        world[x][y].push_front(a);
+                    }
                     break;
                     
                 case Field::empty:
@@ -337,31 +345,142 @@ void StudentWorld::addAntNum(int colony){
 
 
 bool StudentWorld::foodAt(int x, int y){
-    list<Actor *> li = world[x][y];
+    Food *p;
     
-    list<Actor *>::iterator i = li.begin();
-    
-    Actor *a;
-    while (i != li.end()){
-        a = *i;
-        a = dynamic_cast<Food*>(a);
-        if (a!=nullptr && a->isAlive()){
-            //Food is present
-            return true;
-        }
-        i++;
-    }
-    
-    return false;
+    return foodAt(x, y, p);
 
 }
 
 
 
+bool StudentWorld::isPheromone(int x, int y, int colony){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->isPheromone(colony))
+            return true;
+        i++;
+    }
+    
+    return false;
+}
+
+bool StudentWorld::isDanger(int x, int y, int colony){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->isDangerous(colony))
+            return true;
+        i++;
+    }
+    
+    return false;
+}
+
+bool StudentWorld::isEnemy(int x, int y, int colony){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->isEnemy(colony))
+            return true;
+        i++;
+    }
+    
+    return false;
+}
+
+bool StudentWorld::biteRandom(int x, int y, int damage, Actor* source, int colony){
+    list<Actor *> li = world[x][y];
+    vector<Actor *> v;
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->isEnemy(colony) && (*i)!=source)
+            v.push_back((*i));
+        i++;
+    }
+    
+    if (v.empty())
+        return false;
+    
+    
+    int insect = randInt(0, v.size()-1);
+    
+    v[insect]->getBitten(damage);
+    
+    return true;
+}
+
+bool StudentWorld::getPheromone(int x, int y, int colony, Pheromone* p){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->isPheromone(colony)){
+            p = static_cast<Pheromone *>(*i);
+            return true;
+        }
+        i++;
+    }
+    p = nullptr;
+    return false;
+}
+
+void StudentWorld::addPheromone(int x, int y, int colony){
+    Pheromone *p;
+    
+    if (getPheromone(x, y, colony, p)){
+        p->increaseScent(256);
+    }
+    else{
+        Actor *a = nullptr;
+        switch (colony){
+            case 0:
+                a = new Pheromone(x, y, this, colony, IID_PHEROMONE_TYPE0);
+                break;
+            case 1:
+                a = new Pheromone(x, y, this, colony, IID_PHEROMONE_TYPE1);
+                break;
+            case 2:
+                a = new Pheromone(x, y, this, colony, IID_PHEROMONE_TYPE2);
+                break;
+            case 3:
+                a = new Pheromone(x, y, this, colony, IID_PHEROMONE_TYPE3);
+                break;
+        
+        }
+        
+        newActor(x, y, a);
+        
+    }
+}
 
 
-
-
-
-
+bool StudentWorld::onAnthill(int x, int y, int colony){
+    list<Actor *> li = world[x][y];
+    
+    list<Actor *>::iterator i = li.begin();
+    
+    
+    while (i != li.end()){
+        if ((*i)->isAnthill(colony))
+            return true;
+        i++;
+    }
+    
+    return false;
+}
 

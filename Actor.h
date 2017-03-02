@@ -17,13 +17,21 @@ public:
     virtual ~Actor();
     virtual void doSomething() = 0;
     virtual bool canMove() = 0;
+    virtual bool isEnemy(int colony);
+    virtual bool isDangerous(int colony);
+    virtual bool isAnthill(int colony);
+    virtual bool isPheromone(int colony);
+    virtual void getBitten(int amount);
+    
     bool isAlive();
     bool isActive();
     void reActivate();
     void moved();
+    
 protected:
     void setDead();
     StudentWorld* getWorld();
+    void coordInFront(int &x, int &y);
 private:
     bool m_isAlive;
     bool m_active;
@@ -67,6 +75,7 @@ public:
     
     virtual void doSomething();
     virtual bool canMove();
+    virtual bool isAnthill(int colony);
     
     void addAnt();
 private:
@@ -82,9 +91,16 @@ public:
     
     virtual void doSomething();
     virtual bool canMove();
+    virtual bool isPheromone(int colony);
+    
+    void increaseScent(int amount);
+    
+    int getColony();
 private:
     int m_colonyNum;
 };
+
+
 class Insect: public EnergyHolder{
 public:
     Insect(int x, int y, StudentWorld * w, int imageID, int p);
@@ -95,7 +111,9 @@ public:
     
     virtual void stun() = 0;
     virtual void poison() = 0;
-    virtual void getBitten(int amount) = 0;
+    
+    virtual bool isEnemy(int colony);
+    virtual bool isDangerous(int colony);
 protected:
     void resetTicks();
     void sub1Tick();
@@ -104,7 +122,6 @@ protected:
     bool moveOne();
     void addTicks(int t);
     void die();
-    bool biteRandom(int damage);
     bool beginningCommon();
     
     
@@ -125,9 +142,15 @@ public:
     virtual void poison();
     virtual void getBitten(int amount);
     
+    virtual bool isEnemy(int colony);
+    virtual bool isDangerous(int colony);
+    
+    
 private:
-    bool runCommand(const Compiler::Command& c);
-    void evaluateIf(const Compiler::Command& c);
+    bool runCommand(const Compiler::Command& c, bool &changeCount);
+    bool evaluateIf(const Compiler::Command& c);
+    void rotateClockwise();
+    void rotateCounterClockwise();
     
     Compiler * m_compiler;
     int m_colonyNum;
@@ -185,6 +208,8 @@ public:
     virtual bool canMove();
     virtual void doSomething() = 0;
     virtual void attack();
+    
+    
 };
 
 
@@ -204,6 +229,9 @@ public:
     
     virtual void doSomething();
     
+    virtual bool isDangerous(int colony);
+    
+    
 private:
     bool wasPrevious(Insect * p);
     std::vector<Insect *> previous;
@@ -216,6 +244,8 @@ public:
     virtual ~Poison();
     
     virtual void doSomething();
+    
+    virtual bool isDangerous(int colony);
 };
 
 

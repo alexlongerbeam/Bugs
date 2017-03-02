@@ -43,6 +43,49 @@ void Actor::moved(){
     m_active = false;
 }
 
+void Actor::coordInFront(int &x, int &y){
+    int curX = getX();
+    int curY = getY();
+    
+    switch(getDirection()){
+        case GraphObject::up:
+            x = curX;
+            y = curY+1;
+            break;
+        case GraphObject::right:
+            x = curX+1;
+            y = curY;
+            break;
+        case GraphObject::down:
+            x = curX;
+            y = curY-1;
+            break;
+        case GraphObject::left:
+            x = curX-1;
+            y = curY;
+            break;
+        case GraphObject::none:
+            cerr<<"Direction Error"<<endl;
+    }
+}
+
+bool Actor::isEnemy(int colony){
+    return false;
+}
+
+bool Actor::isDangerous(int colony){
+    return false;
+}
+
+bool Actor::isAnthill(int colony){
+    return false;
+}
+
+bool Actor::isPheromone(int colony){
+    return false;
+}
+
+void Actor::getBitten(int amount){}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************ENERGY METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -135,16 +178,14 @@ void Anthill::doSomething(){
     
     //check to try and make new ant
     if (getPoints()>=2000){
-        //add ant
+        addAnt();
         subtractPoints(1500);
-        getWorld()->addAntNum(m_colonyNum);
     }
-    
-    
-    
-    
 }
 
+bool Anthill::isAnthill(int colony){
+    return m_colonyNum==colony;
+}
 
 void Anthill::addAnt(){
     Actor * a;
@@ -165,7 +206,7 @@ void Anthill::addAnt(){
             cerr<<"Error creating Ant"<<endl;
             return;
     }
-    
+    getWorld()->addAntNum(m_colonyNum);
     getWorld()->newActor(getX(), getY(), a);
 }
 ////////////////////////////////////////////////////////////////////////////////////
@@ -189,6 +230,22 @@ bool Pheromone::canMove(){
     return false;
 }
 
+int Pheromone::getColony(){
+    return m_colonyNum;
+}
+
+bool Pheromone::isPheromone(int colony){
+    if (!isAlive())
+        return false;
+    return m_colonyNum==colony;
+}
+
+void Pheromone::increaseScent(int amount){
+    if ((getPoints()+amount)<=768)
+        addPoints(amount);
+    else
+        addPoints(768-getPoints());
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //*******************************INSECT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -294,20 +351,7 @@ void Insect::die(){
     setDead();
 }
 
-bool Insect::biteRandom(int damage){
-    vector<Insect *> v;
-    getWorld()->getInsects(getX(), getY(), v, this);
-    
-    if (v.empty())
-        return false;
-    
-    
-    int insect = randInt(0, v.size()-1);
-    
-    v[insect]->getBitten(damage);
-    
-    return true;
-}
+
 
 
 //returns whether or not the doSomething function should continue
@@ -328,12 +372,21 @@ bool Insect::beginningCommon(){
     return true;
 }
 
+
+bool Insect::isDangerous(int colony){
+    return isAlive();
+}
+
+bool Insect::isEnemy(int colony){
+    return isAlive();
+}
 ////////////////////////////////////////////////////////////////////////////////////
 //**********************************ANT METHODS*************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
 Ant::Ant(int x, int y, StudentWorld *w, Compiler * comp, int colony, int imageID, int p): Insect(x, y, w, imageID, p){
     
+    cerr<<"Ant Created: "<<colony<<endl;
     m_compiler = comp;
     m_colonyNum = colony;
     foodHeld = 0;
@@ -348,18 +401,25 @@ Ant::~Ant(){}
 void Ant::doSomething(){
     if (!beginningCommon())
         return;
-    bool cont;
     Compiler::Command cmd;
-    
+    bool changeCount = true;
+    bool cont;
     for (int i = 0; i<10; i++){
         if (!m_compiler->getCommand(m_counter, cmd)){
+            cerr<<"CompilerError"<<endl;
             setDead();
             return;
         }
-        m_counter++;
-        //runCommand() could change m_counter
-        if (!runCommand(cmd))
+        
+        cont = runCommand(cmd, changeCount);
+        
+        if (changeCount)
+            m_counter++;
+        if (!cont)
             return;
+        
+        
+
     }
     
 }
@@ -381,9 +441,63 @@ void Ant::getBitten(int amount){
     
 }
 
+bool Ant::isEnemy(int colony){
+    if (!isAlive())
+        return false;
+    return (m_colonyNum!=colony);
+}
+
+bool Ant::isDangerous(int colony){
+    if (!isAlive())
+        return false;
+    return (m_colonyNum!=colony);
+}
+
+void Ant::rotateClockwise(){
+    switch(getDirection()){
+        case GraphObject::up:
+            setDirection(right);
+            break;
+        case GraphObject::right:
+            setDirection(down);
+            break;
+        case GraphObject::down:
+            setDirection(left);
+            break;
+        case GraphObject::left:
+            setDirection(up);
+            break;
+        case GraphObject::none:
+            cerr<<"Direction Error"<<endl;
+            
+    }
+}
+
+void Ant::rotateCounterClockwise(){
+    switch(getDirection()){
+        case GraphObject::up:
+            setDirection(left);
+            break;
+        case GraphObject::right:
+            setDirection(up);
+            break;
+        case GraphObject::down:
+            setDirection(right);
+            break;
+        case GraphObject::left:
+            setDirection(down);
+            break;
+        case GraphObject::none:
+            cerr<<"Direction Error"<<endl;
+            
+    }
+}
+
 //returns true if doSomething should continue
-bool Ant::runCommand(const Compiler::Command& c){
+bool Ant::runCommand(const Compiler::Command& c, bool &changeCount){
+    cerr<<c.lineNum<<": "<<c.text<<endl;
     
+    changeCount = true;
     switch(c.opcode){
         case Compiler::moveForward:
             if (moveOne()){
@@ -409,29 +523,32 @@ bool Ant::runCommand(const Compiler::Command& c){
             foodHeld = 0;
             return false;
         case Compiler::bite:
-            //CHANGE THIS TO WORK FOR ANTS
-            biteRandom(15);
+            getWorld()->biteRandom(getX(), getY(), 15, this, m_colonyNum);
             return false;
         case Compiler::pickupFood:
             foodHeld += getWorld()->eatFood(getX(), getY(), max(400, 1800-foodHeld));
             return false;
-        case Compiler:: emitPheromone:
+        case Compiler::emitPheromone:
             getWorld()->addPheromone(getX(), getY(), m_colonyNum);
             return false;
         case Compiler::faceRandomDirection:
             randomDir();
             return false;
         case Compiler::rotateClockwise:
+            rotateClockwise();
+            return false;
         case Compiler::rotateCounterClockwise:
+            rotateCounterClockwise();
             return false;
         case Compiler::generateRandomNumber:
             lastRandomNum = randInt(0, stoi(c.operand1) - 1);
             return true;
         case Compiler::goto_command:
             m_counter = stoi(c.operand1);
+            changeCount = false;
             return true;
         case Compiler::if_command:
-            evaluateIf(c);
+            changeCount = !evaluateIf(c);
             return true;
             
             
@@ -443,14 +560,26 @@ bool Ant::runCommand(const Compiler::Command& c){
     
 }
 
-void Ant::evaluateIf(const Compiler::Command& c){
+bool Ant::evaluateIf(const Compiler::Command& c){
+    int x, y;
     
     int ifCode = stoi(c.operand1);
     bool outcome = false;
     switch(ifCode){
         case 0: //smellDanger
+            coordInFront(x, y);
+            if (getWorld()->isDanger(x, y, m_colonyNum))
+                outcome = true;
+            break;
         case 1: //smellPheromone
+            coordInFront(x, y);
+            if (getWorld()->isPheromone(x, y, m_colonyNum))
+                outcome = true;
+            break;
         case 2: //wasBit
+            if (previouslyBitten)
+                outcome = true;
+            break;
         case 3: //amCarryingFood
             if (foodHeld>0)
                 outcome = true;
@@ -468,9 +597,13 @@ void Ant::evaluateIf(const Compiler::Command& c){
                 outcome = true;
             break;
         case 7: //amStandingWithEnemy
-            //********Figure this out**************
+            if (getWorld()->isEnemy(getX(), getY(), m_colonyNum))
+                outcome=true;
             break;
         case 8: //wasBlockedbyMoving
+            if (previouslyBlocked)
+                outcome = true;
+            break;
         case 9: //lastNumZero
             if (lastRandomNum==0)
                 outcome = true;
@@ -482,6 +615,8 @@ void Ant::evaluateIf(const Compiler::Command& c){
     
     if (outcome)
         m_counter = stoi(c.operand2);
+    
+    return outcome;
 }
 
 
@@ -541,7 +676,7 @@ void Grasshopper::getBitten(int amount){
     bool cont = randInt(0, 1);
     if (cont){
         cerr<<"Biting back"<<endl;
-        biteRandom(50);
+        getWorld()->biteRandom(getX(), getY(), 50, this);
     }
     
     
@@ -553,12 +688,12 @@ bool Grasshopper::moveUnique(){
     //1 in 3 chance of trying to bite another
     int bite = randInt(0, 2);
     if (bite==0){
-        if (biteRandom(50))
+        if (getWorld()->biteRandom(getX(), getY(), 50, this))
             return false;
     }
     
     //If it didn't decide to bite or wasn't able to bite
-    cerr<<"IMPLEMENT GRASSHOPPER JUMP IN CIRCLE"<<endl;
+    //cerr<<"IMPLEMENT GRASSHOPPER JUMP IN CIRCLE"<<endl;
     
     
     
@@ -682,6 +817,10 @@ void Water::doSomething(){
     
 }
 
+bool Water::isDangerous(int colony){
+    return isAlive();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 //********************************POISON METHODS************************************
 ////////////////////////////////////////////////////////////////////////////////////
@@ -700,6 +839,10 @@ void Poison::doSomething(){
 }
 
 
+
+bool Poison::isDangerous(int colony){
+    return isAlive();
+}
 
 
 
