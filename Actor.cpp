@@ -495,8 +495,8 @@ void Ant::rotateCounterClockwise(){
 
 //returns true if doSomething should continue
 bool Ant::runCommand(const Compiler::Command& c, bool &changeCount){
-    cerr<<c.lineNum<<": "<<c.text<<endl;
-    
+    //cerr<<c.lineNum<<": "<<c.text<<endl;
+    //cerr<<foodHeld<<endl;
     changeCount = true;
     switch(c.opcode){
         case Compiler::moveForward:

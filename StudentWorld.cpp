@@ -6,6 +6,8 @@
 #include <iostream>
 #include <list>
 #include <vector>
+#include <sstream>  // defines the type std::ostringstream
+#include <iomanip>  // defines the manipulator setw
 using namespace std;
 
 GameWorld* createStudentWorld(string assetDir)
@@ -25,27 +27,29 @@ int StudentWorld::init()
     {
         
         tickCount = 0;
+        winner = -1;
         Compiler *compilerForEntranti;
         
         vector<string> fileNames = getFilenamesOfAntPrograms();
         vector<Compiler *> compilerPtrs;
+        
         string error;
         numColonies = fileNames.size();
         for (int i = 0; i<fileNames.size(); i++){
             compilerForEntranti = new Compiler;
             if (!compilerForEntranti->compile(fileNames[i], error)){
                 setError(fileNames[i] + " " + error);
+                cerr<<error<<endl;
+                
                 delete compilerForEntranti;
                 for (int i = 0; i<compilerPtrs.size(); i++)
                     delete compilerPtrs[i];
                 return GWSTATUS_LEVEL_ERROR;
             }
             compilerPtrs.push_back(compilerForEntranti);
+            antNames.push_back(compilerForEntranti->getColonyName());
             antNums.push_back(0);
         }
-        
-        
-        
         
         if (!loadField(compilerPtrs)){
             cerr<<"Error loading field"<<endl;
@@ -59,12 +63,12 @@ int StudentWorld::move()
         tickCount++;
         moveAll();
         checkDead();
-        //Temp for testing
-        setGameStatText(to_string(tickCount));
+        setGameStatText(statusText());
         if (tickCount==2000){
-            //setWinner()
-            //return GWSTATUS_PLAYER_WON if there is a winner
-            return GWSTATUS_NO_WINNER;
+            if (setWinner())
+                return GWSTATUS_PLAYER_WON;
+            else
+                return GWSTATUS_NO_WINNER;
         }
         
         return GWSTATUS_CONTINUE_GAME;
@@ -82,7 +86,52 @@ void StudentWorld::cleanUp()
         }
 }
 
+bool StudentWorld::setWinner(){
+    if (winner==-1)
+        return false;
+    GameWorld::setWinner(antNames[winner]);
+    return true;
+}
 
+int StudentWorld::getWinningNumber(){
+    int maxIndex = -1;
+    int max = 5;
+    for (int i = 0; i<antNums.size(); i++){
+        if (antNums[i]>max){
+            maxIndex = i;
+            max = antNums[i];
+        }
+    }
+    if (winner == -1)
+        winner = maxIndex;
+    else
+        if (max>antNums[winner])
+            winner = maxIndex;
+    
+    return winner;
+    
+}
+
+string StudentWorld::statusText(){
+    int winning = getWinningNumber();
+    ostringstream s;
+    
+    s<<"Ticks:";
+    //cerr<<"******************"<<antNums[0]<<endl;
+    s<<setw(5)<<tickCount;
+    s<<" - ";
+    for (int i = 0; i<antNames.size(); i++){
+        s<<antNames[i];
+        if (i==winning)
+            s<<"*";
+        s<<": ";
+        s.fill('0');
+        s<<setw(2)<<antNums[i];
+        s<<" ants  ";
+    }
+    
+    return s.str();
+}
 
 bool StudentWorld::loadField(vector<Compiler *> compilers){
         Field f;

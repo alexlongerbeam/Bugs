@@ -59,11 +59,16 @@ private:
     void checkDead();
     bool foodAt(int x, int y, Food *&p);
     bool getPheromone(int x, int y, int colony, Pheromone* p);
+    std::string statusText();
+    int getWinningNumber();
+    bool setWinner();
     
     std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
     int tickCount;
     std::vector<int> antNums;
+    std::vector<std::string> antNames;
     int numColonies;
+    int winner;
 };
 
 #endif // STUDENTWORLD_H_
