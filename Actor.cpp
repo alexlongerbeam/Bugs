@@ -3,6 +3,7 @@
 #include "Compiler.h"
 #include <iostream>
 #include <vector>
+#include <cmath>
 using namespace std;
 // Students:  Add code to this file (if you wish), Actor.h, StudentWorld.h, and StudentWorld.cpp
 
@@ -346,7 +347,7 @@ bool Insect::canMove(){
 }
 
 void Insect::die(){
-    cerr<<"DEATH"<<endl;
+    //cerr<<"DEATH"<<endl;
     getWorld()->depositFood(getX(), getY(), 100);
     setDead();
 }
@@ -386,7 +387,7 @@ bool Insect::isEnemy(int colony){
 
 Ant::Ant(int x, int y, StudentWorld *w, Compiler * comp, int colony, int imageID, int p): Insect(x, y, w, imageID, p){
     
-    cerr<<"Ant Created: "<<colony<<endl;
+    //cerr<<"Ant Created: "<<colony<<endl;
     m_compiler = comp;
     m_colonyNum = colony;
     foodHeld = 0;
@@ -666,7 +667,7 @@ void Grasshopper::stun(){}
 void Grasshopper::poison(){}
 void Grasshopper::getBitten(int amount){
     subtractPoints(amount);
-    cerr<<"Grasshopper bitten"<<endl;
+    //cerr<<"Grasshopper bitten"<<endl;
     if (getPoints()<=0){
         die();
         return;
@@ -675,7 +676,7 @@ void Grasshopper::getBitten(int amount){
     //50% chance of bite back
     bool cont = randInt(0, 1);
     if (cont){
-        cerr<<"Biting back"<<endl;
+        //cerr<<"Biting back"<<endl;
         getWorld()->biteRandom(getX(), getY(), 50, this);
     }
     
@@ -683,7 +684,7 @@ void Grasshopper::getBitten(int amount){
     
 }
 
-
+//returns whether or not doSomething should continue
 bool Grasshopper::moveUnique(){
     //1 in 3 chance of trying to bite another
     int bite = randInt(0, 2);
@@ -692,10 +693,18 @@ bool Grasshopper::moveUnique(){
             return false;
     }
     
-    //If it didn't decide to bite or wasn't able to bite
-    //cerr<<"IMPLEMENT GRASSHOPPER JUMP IN CIRCLE"<<endl;
+    int jump = randInt(0, 10);
+    if (jump==0){
+        int x;
+        int y;
+        if (circle(x, y)){
+            //cerr<<"Moving"<<endl;
+            moveTo(x, y);
+            return false;
+        }
+        cerr<<"No spot to move"<<endl;
     
-    
+    }
     
     return true;
 }
@@ -721,6 +730,50 @@ void Grasshopper::endCommon(){
         sub1Walk();
     else
         setDistanceZero();
+}
+
+bool Grasshopper::circle(int &x, int &y){
+    vector<int> xC;
+    vector<int> yC;
+    int tempx;
+    int tempy;
+    int currX = getX();
+    int currY = getY();
+    
+    for (int i = 1; i<11; i++){
+        for (int d = 0; d<360; d+=5){
+            tempx=currX + i*cos(d * (M_PI/180));
+            tempy=currY + i*sin(d * (M_PI/180));
+            if (tempx<=VIEW_WIDTH-1 && tempx>=0 && tempy<=VIEW_HEIGHT-1 && tempy>=0 && tempx!=currX && tempy!=currY){
+                xC.push_back(tempx);
+                yC.push_back(tempy);
+            }
+        }
+        
+    }
+    
+    //cerr<<xC.size()<<endl;
+    bool done = false;
+    while(!done){
+        if (xC.empty())
+            return false;
+        int location = randInt(0, xC.size()-1);
+        tempx = xC[location];
+        tempy = yC[location];
+        
+        if (getWorld()->pebbleAt(tempx, tempy)){
+            xC.erase(xC.begin()+location);
+            yC.erase(yC.begin()+location);
+            //cerr<<"Pebble At"<<endl;
+        }
+        else
+            done = true;
+    }
+    
+    x = tempx;
+    y = tempy;
+    
+    return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////
 //**************************BABY GRASSHOPPER METHODS********************************
@@ -758,7 +811,7 @@ void BabyGrasshopper::poison(){
 
 void BabyGrasshopper::getBitten(int amount){
     subtractPoints(amount);
-    cerr<<"Baby bitten"<<endl;
+    //cerr<<"Baby bitten"<<endl;
     if (getPoints()<=0)
         die();
 }

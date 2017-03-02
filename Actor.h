@@ -178,6 +178,7 @@ protected:
     void endCommon();
     virtual bool moveUnique();
 private:
+    bool circle(int &x, int &y);
     int m_distanceToWalk;
 };
 

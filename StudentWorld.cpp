@@ -341,6 +341,10 @@ int StudentWorld::eatFood(int x, int y, int amount){
 void StudentWorld::depositFood(int x, int y, int amount){
     Food *p;
     
+    if (amount==0)
+        return;
+    
+    
     if (foodAt(x, y, p)){
         p->addFood(amount);
     }
