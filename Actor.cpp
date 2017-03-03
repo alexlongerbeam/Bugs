@@ -281,10 +281,7 @@ int Insect::ticksToSleep(){
 
 
 bool Insect::moveOne(){
-    //If pebble present, return false cause it didn't move
-    
-    
-    //If no pebble in the way
+
     
     Direction d = getDirection();
     
@@ -561,6 +558,7 @@ bool Ant::runCommand(const Compiler::Command& c, bool &changeCount){
     
 }
 
+//returns the outcome of the if statement
 bool Ant::evaluateIf(const Compiler::Command& c){
     int x, y;
     
@@ -692,7 +690,7 @@ bool Grasshopper::moveUnique(){
         if (getWorld()->biteRandom(getX(), getY(), 50, this))
             return false;
     }
-    
+    //1 in 10 chance of jumping within a circle
     int jump = randInt(0, 10);
     if (jump==0){
         int x;
@@ -823,7 +821,7 @@ Object::Object(int x, int y, StudentWorld * w, int imageID, int depth, Direction
 
 Object::~Object(){}
 
-void Object::attack(){}
+
 
 bool Object::canMove(){
     return false;
