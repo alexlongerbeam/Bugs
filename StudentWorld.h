@@ -53,7 +53,7 @@ public:
     bool biteRandom(int x, int y, int damage, Actor* source, int colony = -1);
     
 private:
-    bool loadField(std::vector<Compiler *> compilers);
+    bool loadField();
     void moveAll();
     void actorMoved(Actor * a, int oldX, int oldY);
     void checkDead();
@@ -64,11 +64,14 @@ private:
     bool setWinner();
     
     std::list<Actor*> world[VIEW_HEIGHT][VIEW_WIDTH];
+    Compiler* compilerPtrs[4];
     int tickCount;
     std::vector<int> antNums;
     std::vector<std::string> antNames;
     int numColonies;
     int winner;
+    
+    
 };
 
 #endif // STUDENTWORLD_H_

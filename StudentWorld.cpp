@@ -19,42 +19,39 @@ GameWorld* createStudentWorld(string assetDir)
 
 StudentWorld::StudentWorld(string assetDir): GameWorld(assetDir){}
 
-StudentWorld::~StudentWorld(){
-    cleanUp();
-}
+StudentWorld::~StudentWorld(){}
 
 int StudentWorld::init()
     {
-        
         tickCount = 0;
         winner = -1;
-        Compiler *compilerForEntranti;
         
         vector<string> fileNames = getFilenamesOfAntPrograms();
-        vector<Compiler *> compilerPtrs;
         
+        compilerPtrs[0] = new Compiler;
+        compilerPtrs[1] = new Compiler;
+        compilerPtrs[2] = new Compiler;
+        compilerPtrs[3] = new Compiler;
         string error;
         numColonies = fileNames.size();
         for (int i = 0; i<fileNames.size(); i++){
-            compilerForEntranti = new Compiler;
-            if (!compilerForEntranti->compile(fileNames[i], error)){
+            if (!compilerPtrs[i]->compile(fileNames[i], error)){
                 setError(fileNames[i] + " " + error);
                 cerr<<error<<endl;
                 
-                delete compilerForEntranti;
-                for (int i = 0; i<compilerPtrs.size(); i++)
-                    delete compilerPtrs[i];
                 return GWSTATUS_LEVEL_ERROR;
             }
-            compilerPtrs.push_back(compilerForEntranti);
-            antNames.push_back(compilerForEntranti->getColonyName());
+            
+            antNames.push_back(compilerPtrs[i]->getColonyName());
             antNums.push_back(0);
         }
         
-        if (!loadField(compilerPtrs)){
+        if (!loadField()){
             cerr<<"Error loading field"<<endl;
             return GWSTATUS_LEVEL_ERROR;
         }
+        
+    
         return GWSTATUS_CONTINUE_GAME;
     }
     
@@ -76,14 +73,23 @@ int StudentWorld::move()
     
 void StudentWorld::cleanUp()
 {
+    list<Actor *>::iterator i;
         for (int x=0; x<VIEW_WIDTH; x++){
             for (int y=0; y<VIEW_HEIGHT; y++){
-                while (!world[x][y].empty()){
-                    delete world[x][y].front();
-                    world[x][y].pop_front();
+                i = world[x][y].begin();
+                while(i!=world[x][y].end()){
+                    delete (*i);
+                    i++;
+                
                 }
             }
         }
+    
+
+    
+    for (int i = 0; i<4; i++){
+        delete compilerPtrs[i];
+    }
 }
 
 bool StudentWorld::setWinner(){
@@ -133,7 +139,7 @@ string StudentWorld::statusText(){
     return s.str();
 }
 
-bool StudentWorld::loadField(vector<Compiler *> compilers){
+bool StudentWorld::loadField(){
         Field f;
         string fieldFile = getFieldFilename();
         string error;
@@ -147,7 +153,6 @@ bool StudentWorld::loadField(vector<Compiler *> compilers){
         for (int y=0; y<VIEW_HEIGHT; y++){
             Field::FieldItem item = f.getContentsOf(x,y);
             Actor * a;
-            
             switch (item) {
                 case Field::rock:
                     a = new Pebble(x,y, this);
@@ -172,25 +177,25 @@ bool StudentWorld::loadField(vector<Compiler *> compilers){
                 //All anthill cases
                 case Field::anthill0:
                     if (numColonies>0){
-                        a = new Anthill(x, y, this, compilers[0], 0);
+                        a = new Anthill(x, y, this, compilerPtrs[0], 0);
                         world[x][y].push_front(a);
                     }
                     break;
                 case Field::anthill1:
                     if (numColonies>1){
-                        a = new Anthill(x, y, this, compilers[1], 1);
+                        a = new Anthill(x, y, this, compilerPtrs[1], 1);
                         world[x][y].push_front(a);
                     }
                     break;
                 case Field::anthill2:
                     if (numColonies>2){
-                        a = new Anthill(x, y, this, compilers[2], 2);
+                        a = new Anthill(x, y, this, compilerPtrs[2], 2);
                         world[x][y].push_front(a);
                     }
                     break;
                 case Field::anthill3:
                     if (numColonies>3){
-                        a = new Anthill(x, y, this, compilers[3], 3);
+                        a = new Anthill(x, y, this, compilerPtrs[3], 3);
                         world[x][y].push_front(a);
                     }
                     break;
