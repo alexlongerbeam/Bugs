@@ -19,7 +19,11 @@ GameWorld* createStudentWorld(string assetDir)
 
 StudentWorld::StudentWorld(string assetDir): GameWorld(assetDir){}
 
-StudentWorld::~StudentWorld(){}
+StudentWorld::~StudentWorld(){
+    for (int i = 0; i<4; i++){
+        delete compilerPtrs[i];
+    }
+}
 
 int StudentWorld::init()
     {
@@ -85,11 +89,6 @@ void StudentWorld::cleanUp()
             }
         }
     
-
-    
-    for (int i = 0; i<4; i++){
-        delete compilerPtrs[i];
-    }
 }
 
 bool StudentWorld::setWinner(){
